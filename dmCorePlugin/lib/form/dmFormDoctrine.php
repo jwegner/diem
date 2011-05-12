@@ -224,7 +224,7 @@ abstract class dmFormDoctrine extends sfFormDoctrine
 				{
 					//form validation ensures an existing ID for $this->nestedSetParentId
 					$nestedSetParent = $this->object->getTable()->find($this->nestedSetParentId);
-					$nestedSetMethod = ($node->isValidNode() ? 'move' : 'insert') . 'AsFirstChildOf';
+					$nestedSetMethod = ($node->isValidNode() ? 'move' : 'insert') . 'AsLastChildOf';
 					$node->$nestedSetMethod($nestedSetParent); //calls $this->object->save internally
 				}
 			}
