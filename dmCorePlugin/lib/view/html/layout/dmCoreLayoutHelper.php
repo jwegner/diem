@@ -31,6 +31,7 @@ class dmCoreLayoutHelper extends dmConfigurable
 		return
 		$this->renderHttpMetas().
 		$this->renderMetas().
+                $this->renderXmlNsHeadTags().
 		$this->renderStylesheets().
 		$this->renderFavicon().
 		$this->renderIeHtml5Fix().
@@ -86,16 +87,18 @@ class dmCoreLayoutHelper extends dmConfigurable
 	{
 		$culture = $this->serviceContainer->getParameter('user.culture');
 
+
 		if ($this->isHtml5() || $this->isHtml4)
 		{
-			$htmlTag = sprintf('<html lang="%s">', $culture);
+			$htmlTag = sprintf('<html lang="%s" %s>', $culture, $this->getXmlNsDeclarations());
 		}
 		else
 		{
 			$htmlTag = sprintf(
-        '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="%s"%s >',
+        '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="%s"%s %s >',
 			$culture,
-        '1.1' == $this->getDocTypeOption('version', '1.0') ? '' : " lang=\"$culture\""
+        '1.1' == $this->getDocTypeOption('version', '1.0') ? '' : " lang=\"$culture\"",
+                                $this->getXmlNsDeclarations()
 			);
 		}
 
@@ -214,7 +217,12 @@ class dmCoreLayoutHelper extends dmConfigurable
 
 	public function renderJavascripts()
 	{
-		return $this->renderJavascriptsIncludes() . PHP_EOL . $this->renderJavascriptsCodes();
+		$output = $this->renderJavascriptsIncludes();
+		$jsCodes = $this->renderJavascriptsCodes();
+		if (!empty($jsCodes)) {
+			$output .=  PHP_EOL . $jsCodes;
+		}
+		return $output;
 	}
 
 	protected function renderJavascriptsCodes()
@@ -232,7 +240,9 @@ class dmCoreLayoutHelper extends dmConfigurable
 
 		$js = '';
 		$scriptTag = '<script type="text/javascript">/* <![CDATA[ */;(function($){$(document).ready(function(){%s});})(jQuery);/* ]]> */</script>';
-		$js = sprintf($scriptTag, implode(PHP_EOL, $codes));
+		if (!empty($codes)) {
+			$js = sprintf($scriptTag, implode(PHP_EOL, $codes));
+		}
 
 		return $js;
 	}
@@ -262,7 +272,7 @@ class dmCoreLayoutHelper extends dmConfigurable
 				if (isset($options['condition'])) {
 					$scriptTag = sprintf('<!--[if %s]>%s<![endif]-->', $options['condition'], $scriptTag);
 				}
-				$html .= $scriptTag;
+				$html .= PHP_EOL . $scriptTag;
 			}
 		}
 
@@ -298,7 +308,7 @@ class dmCoreLayoutHelper extends dmConfigurable
 
 	public function renderJavascriptConfig()
 	{
-		return '<script type="text/javascript">var dm_configuration = '.json_encode($this->getJavascriptConfig()).';</script>';
+		return PHP_EOL . '<script type="text/javascript">var dm_configuration = '.json_encode($this->getJavascriptConfig()).';</script>';
 	}
 
 
@@ -338,4 +348,18 @@ class dmCoreLayoutHelper extends dmConfigurable
 	{
 		return $this->serviceContainer->getService($name, $class);
 	}
+        
+        protected function renderXmlNsHeadTags() {
+            $xmlnss = $this->getService('response')->getAllXmlNs();
+            $tags = '';
+            foreach ($xmlnss as $xmlns) $tags .= $xmlns->renderTags();
+            return $tags;
+        }
+        
+        protected function getXmlNsDeclarations() {
+            $xmlnss = $this->getService('response')->getAllXmlNs();
+            $ns = '';
+            foreach ($xmlnss as $xmlns) $ns .= $xmlns->renderNamespace() . ' ';
+            return $ns;
+        }
 }
