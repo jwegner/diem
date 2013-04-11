@@ -13,7 +13,14 @@ class dmAdminLayoutHelper extends dmCoreLayoutHelper
 
     return parent::renderBodyTag($options);
   }
-  
+
+  protected function getMetas()
+  {
+    return array(
+        'title'       => $this->getService('response')->getTitle()
+		);
+  }
+    
   public function renderEditBars()
   {
     $user = $this->getService('user');
