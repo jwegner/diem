@@ -35,7 +35,7 @@ class dmMediaSynchronizer
 
     $medias   = $folder->getDmMediasByFileName();
     $children = $folder->getSubfoldersByName();
-
+    
     $dirty = false;
 
     /*
@@ -145,7 +145,7 @@ class dmMediaSynchronizer
 
     if($dirty)
     {
-      $folder->clearCache()->refresh()->refreshRelated('Medias');
+        $folder->clearCache()->refresh()->refreshRelated('Medias');
     }
   }
 
