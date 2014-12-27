@@ -8,6 +8,10 @@ System:
       security:
         admin:
           actions:
+            myAccount:
+              is_secure: true
+              strategy: action
+              credentials: admin
             secure:
               is_secure: false
             signin:
